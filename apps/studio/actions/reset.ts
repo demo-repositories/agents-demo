@@ -1,6 +1,6 @@
 import {TrashIcon} from '@sanity/icons'
 import {DocumentActionProps} from 'sanity'
-import {deletePosts} from '../lib/reset'
+import {deleteAll} from '../lib/reset'
 
 export function DeleteAction(props: DocumentActionProps) {
   return {
@@ -9,12 +9,8 @@ export function DeleteAction(props: DocumentActionProps) {
     tone: 'critical',
     onHandle: async () => {
       try {
-        await deletePosts()
-        props.onComplete()
-      } catch (error) {
-        console.error('Error in reset action:', error)
-        props.onComplete()
-      }
+        await deleteAll()
+      } catch (error) {}
     },
   }
 }

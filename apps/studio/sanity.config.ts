@@ -22,7 +22,7 @@ export const supportedLanguages = [
   {id: 'ko', title: 'Korean'},
   {id: 'ar', title: 'Arabic'},
   {id: 'hi', title: 'Hindi'},
-].slice(0, 5)
+]
 export default defineConfig({
   name: 'default',
   title: 'SE Agent Demo',

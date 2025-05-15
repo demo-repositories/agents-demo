@@ -14,24 +14,31 @@ const createMetadataDocument = async (
   documentId: string,
   newRef: {
     _key: string
-    _type: string
+    _type: 'internationalizedArrayReferenceValue'
     value: {
       _ref: string
-      _type: string
+      _type: 'reference'
     }
   },
+  sourceLanguage: string,
 ) => {
   try {
     const metadataDoc = {
       _type: 'translation.metadata',
-      translations: [newRef],
-      document: {
-        _type: 'reference',
-        _ref: documentId,
-      },
+      translations: [
+        {
+          _key: sourceLanguage,
+          _type: 'internationalizedArrayReferenceValue',
+          value: {
+            _ref: documentId,
+            _type: 'reference',
+          },
+        },
+        newRef,
+      ],
     }
     const result = await client.create(metadataDoc)
-    console.log('Successfully created metadata document')
+    console.log('Successfully created metadata document with original document and translation')
     return result
   } catch (error) {
     console.error('Error creating metadata document:', error)
@@ -89,23 +96,26 @@ const translateToLanguage = async (
       },
     })
 
-    // Patch the new document to set its language field
-    // await translateClient.patch(newDoc._id).set({language: language.id}).commit()
-
     const newRef = {
       _key: language.id,
-      _type: 'internationalizedArrayReferenceValue',
+      _type: 'internationalizedArrayReferenceValue' as const,
       value: {
-        _ref: newDoc._id,
-        _type: 'reference',
+        _ref: newDoc._id.split('.').pop() || '',
+        _type: 'reference' as const,
+        _strengthenOnPublish: {
+          type: newDoc._type,
+        },
+        _weak: true,
       },
     }
 
+    // If we have metadata, patch it. If not, create a new one
     if (metadata?._id) {
       await patchMetadataTranslations(translateClient, metadata._id, newRef)
     } else {
-      console.log('No metadata document found, creating new one')
-      await createMetadataDocument(translateClient, document.id as string, newRef)
+      // Create new metadata document with original document and translation
+      console.log('Creating new metadata document with original document and translation')
+      await createMetadataDocument(translateClient, document._id as string, newRef, fromLanguage.id)
     }
 
     console.log('Translated to', language, newDoc)
@@ -127,21 +137,31 @@ export const translate = async (document: SanityDocument, client: SanityClient) 
 
   const targetLanguages = supportedLanguages.filter((language) => language.id !== document.language)
 
-  const translationPromises = targetLanguages.map(async (language) => {
-    // TODO make observable
-    const metadata = await client.fetch(
-      `*[_type == "translation.metadata" && references("${document.id}")][0]`,
-    )
+  // First, check if a metadata document exists
+  const existingMetadata = await client.fetch(
+    `*[_type == "translation.metadata" && references($documentId)][0]`,
+    {documentId: document._id.split('.').pop()},
+  )
+
+  // Process translations sequentially to avoid race conditions
+  const results: TranslationResult[] = []
+  for (const language of targetLanguages) {
     // Skip if translation already exists
-    if (hasTranslation(metadata, language.id)) {
+    if (hasTranslation(existingMetadata, language.id)) {
       console.log(`Translation to ${language.id} already exists, skipping`)
-      return {success: true, language, skipped: true} as TranslationResult
+      results.push({success: true, language, skipped: true})
+      continue
     }
 
-    return translateToLanguage(document, translateClient, fromLanguage, language, metadata)
-  })
-
-  const results = await Promise.all(translationPromises)
+    const result = await translateToLanguage(
+      document,
+      translateClient,
+      fromLanguage,
+      language,
+      existingMetadata,
+    )
+    results.push(result)
+  }
 
   const successful = results.filter((r) => r.success && !r.skipped).length
   const skipped = results.filter((r) => r.skipped).length

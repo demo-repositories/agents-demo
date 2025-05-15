@@ -4,7 +4,7 @@ import {projectId, dataset} from '../env'
 import {DocumentActionProps} from 'sanity'
 import {translate} from '../lib/translate'
 
-const client = createClient({projectId, dataset, apiVersion: 'vX'})
+const client = createClient({projectId, dataset, apiVersion: 'vX', useCdn: false})
 
 export function TranslateAction(props: DocumentActionProps) {
   const document = props.draft ?? props.published
