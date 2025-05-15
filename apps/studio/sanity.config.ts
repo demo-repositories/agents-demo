@@ -53,7 +53,9 @@ export default defineConfig({
   },
   document: {
     actions: (prev, context) => {
-      return context.schemaType === 'post' ? [...prev, TranslateAction, DeleteAction] : prev
+      return context.schemaType === 'post' && process.env.NODE_ENV === 'development'
+        ? [...prev, TranslateAction, DeleteAction]
+        : prev
     },
   },
 })
