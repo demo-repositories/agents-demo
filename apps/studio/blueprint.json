@@ -1,0 +1,15 @@
+{
+  "blueprintVersion": "2024-10-01",
+  "resources": [
+    {
+      "displayName": "translate",
+      "name": "translate",
+      "src": "functions/translate",
+      "type": "sanity.function.document",
+      "event": {
+        "on": ["publish"],
+        "filter": "_type == 'post' && language == 'en'"
+      }
+    }
+  ]
+}
