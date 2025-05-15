@@ -138,7 +138,7 @@ export const translate = async (document: SanityDocument, client: SanityClient) 
   const targetLanguages = supportedLanguages.filter((language) => language.id !== document.language)
 
   // First, check if a metadata document exists
-  const existingMetadata = await client.fetch(
+  let metadata = await client.fetch(
     `*[_type == "translation.metadata" && references($documentId)][0]`,
     {documentId: document._id.split('.').pop()},
   )
@@ -147,7 +147,7 @@ export const translate = async (document: SanityDocument, client: SanityClient) 
   const results: TranslationResult[] = []
   for (const language of targetLanguages) {
     // Skip if translation already exists
-    if (hasTranslation(existingMetadata, language.id)) {
+    if (hasTranslation(metadata, language.id)) {
       console.log(`Translation to ${language.id} already exists, skipping`)
       results.push({success: true, language, skipped: true})
       continue
@@ -158,8 +158,17 @@ export const translate = async (document: SanityDocument, client: SanityClient) 
       translateClient,
       fromLanguage,
       language,
-      existingMetadata,
+      metadata,
     )
+
+    // If translation was successful, fetch the updated metadata document
+    if (result.success) {
+      metadata = await client.fetch(
+        `*[_type == "translation.metadata" && references($documentId)][0]`,
+        {documentId: document._id.split('.').pop()},
+      )
+    }
+
     results.push(result)
   }
 
