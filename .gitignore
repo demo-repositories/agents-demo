@@ -31,3 +31,4 @@ shrinkwrap.yaml
 
 # Misc
 coverage/
+.build/

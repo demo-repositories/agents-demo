@@ -6,6 +6,7 @@
       "name": "translate",
       "src": "functions/translate",
       "type": "sanity.function.document",
+      "timeout": 900,
       "event": {
         "on": ["publish"],
         "filter": "_type == 'post'"
