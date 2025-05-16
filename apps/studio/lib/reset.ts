@@ -40,8 +40,8 @@ async function deleteDocuments(type: string, keepId?: string) {
       return
     }
 
-    // Delete each document
-    for (const doc of docs) {
+    // Delete documents in parallel
+    const deletePromises = docs.map(async (doc: SanityDocument) => {
       try {
         console.log(`Attempting to delete ${type} document:`, doc._id)
 
@@ -58,7 +58,6 @@ async function deleteDocuments(type: string, keepId?: string) {
           console.error(`Document still exists after deletion:`, doc._id)
           // Try one more time
           await client.delete(doc._id)
-          continue
         }
 
         console.log(`Successfully deleted ${type} document:`, doc._id)
@@ -71,7 +70,10 @@ async function deleteDocuments(type: string, keepId?: string) {
           console.error(`Failed retry deletion for ${type} document:`, doc._id, retryError)
         }
       }
-    }
+    })
+
+    // Wait for all deletions to complete
+    await Promise.all(deletePromises)
 
     // Wait a moment before final verification
     await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -83,14 +85,15 @@ async function deleteDocuments(type: string, keepId?: string) {
         `Some ${type} documents were not deleted:`,
         remainingDocs.map((p: SanityDocument) => p._id),
       )
-      // Try one final time to delete remaining documents
-      for (const doc of remainingDocs) {
+      // Try one final time to delete remaining documents in parallel
+      const finalDeletePromises = remainingDocs.map(async (doc: SanityDocument) => {
         try {
           await client.delete(doc._id)
         } catch (error) {
           console.error(`Final attempt failed for ${type} document:`, doc._id, error)
         }
-      }
+      })
+      await Promise.all(finalDeletePromises)
     } else {
       console.log(`Successfully deleted all ${type} documents${keepId ? ` except ${keepId}` : ''}`)
     }
@@ -108,11 +111,8 @@ export const deleteAll = async () => {
       hasToken: !!token,
     })
 
-    // Delete posts (except keepId)
-    await deleteDocuments('post', keepId)
-
-    // Delete all translation metadata
-    await deleteDocuments('translation.metadata')
+    // Delete posts and translation metadata in parallel
+    await Promise.all([deleteDocuments('post', keepId), deleteDocuments('translation.metadata')])
 
     console.log('Completed all deletion operations')
   } catch (error) {

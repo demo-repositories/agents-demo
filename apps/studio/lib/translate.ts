@@ -2,13 +2,45 @@ import type {SanityClient, SanityDocument} from 'sanity'
 import {supportedLanguages} from '../sanity.config'
 import {token, projectId, dataset} from '../env'
 import {createClient} from '@sanity/client'
+
 type TranslationResult = {
   success: boolean
   language: {id: string; title: string}
   error?: unknown
   skipped?: boolean
 }
+
 export const client = createClient({projectId, dataset, apiVersion: 'vX', useCdn: false, token})
+
+// Simple semaphore implementation for rate limiting
+class Semaphore {
+  private permits: number
+  private queue: Array<() => void> = []
+
+  constructor(permits: number) {
+    this.permits = permits
+  }
+
+  async acquire(): Promise<void> {
+    if (this.permits > 0) {
+      this.permits--
+      return Promise.resolve()
+    }
+    return new Promise<void>((resolve) => this.queue.push(resolve))
+  }
+
+  release(): void {
+    if (this.queue.length > 0) {
+      const next = this.queue.shift()
+      if (next) next()
+    } else {
+      this.permits++
+    }
+  }
+}
+
+// Create a semaphore with desired concurrency limit
+const translationSemaphore = new Semaphore(6) // Adjust this number based on your API limits
 
 const createMetadataDocument = async (
   client: SanityClient,
@@ -142,28 +174,49 @@ export const translate = async (document: SanityDocument) => {
     {documentId: document._id.split('.').pop()},
   )
 
-  // Process translations sequentially to avoid race conditions
-  const results: TranslationResult[] = []
-  for (const language of targetLanguages) {
-    // Skip if translation already exists
-    if (hasTranslation(metadata, language.id)) {
-      console.log(`Translation to ${language.id} already exists, skipping`)
-      results.push({success: true, language, skipped: true})
-      continue
-    }
-
-    const result = await translateToLanguage(document, fromLanguage, language, metadata)
-
-    // If translation was successful, fetch the updated metadata document
-    if (result.success) {
-      metadata = await client.fetch(
-        `*[_type == "translation.metadata" && references($documentId)][0]`,
-        {documentId: document._id.split('.').pop()},
-      )
-    }
-
-    results.push(result)
+  // Create initial metadata document if it doesn't exist
+  if (!metadata?._id) {
+    metadata = await createMetadataDocument(
+      client,
+      document._id as string,
+      {
+        _key: fromLanguage.id,
+        _type: 'internationalizedArrayReferenceValue',
+        value: {
+          _ref: document._id.split('.').pop() || '',
+          _type: 'reference',
+        },
+      },
+      fromLanguage.id,
+    )
   }
+
+  // Process translations with rate limiting
+  const results: TranslationResult[] = await Promise.all(
+    targetLanguages.map(async (language) => {
+      // Skip if translation already exists
+      if (hasTranslation(metadata, language.id)) {
+        console.log(`Translation to ${language.id} already exists, skipping`)
+        return {success: true, language, skipped: true}
+      }
+
+      // Acquire semaphore before translation
+      await translationSemaphore.acquire()
+      try {
+        const result = await translateToLanguage(document, fromLanguage, language, metadata)
+        return result
+      } finally {
+        // Always release the semaphore, even if translation fails
+        translationSemaphore.release()
+      }
+    }),
+  )
+
+  // After all translations are complete, fetch the final metadata state
+  metadata = await client.fetch(
+    `*[_type == "translation.metadata" && references($documentId)][0]`,
+    {documentId: document._id.split('.').pop()},
+  )
 
   const successful = results.filter((r) => r.success && !r.skipped).length
   const skipped = results.filter((r) => r.skipped).length
