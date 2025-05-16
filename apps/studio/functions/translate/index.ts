@@ -5,9 +5,9 @@ export async function handler({context, event}) {
   console.log(`👋 Your Sanity Function was called at ${time}`)
   console.log(context)
   if (
-    !context
-    // !context.clientOptions.projectId ||
-    // context.clientOptions.projectId !== 'blneb7aj'
+    !context ||
+    !context.clientOptions.projectId ||
+    context.clientOptions.projectId !== 'blneb7aj'
   ) {
     console.log('returning')
     return
