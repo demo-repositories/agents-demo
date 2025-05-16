@@ -8,7 +8,7 @@
       "type": "sanity.function.document",
       "event": {
         "on": ["publish"],
-        "filter": "_type == 'post' && language == 'en'"
+        "filter": "_type == 'post'"
       }
     }
   ]

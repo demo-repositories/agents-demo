@@ -1,0 +1,169 @@
+{
+  "data": {
+    "_createdAt": "2025-05-15T02:02:01Z",
+    "_id": "9d1e0998-7d85-47b5-abf0-a52360dc1674",
+    "_rev": "e2M7ViLWEdkXVGATRPwu4q",
+    "_type": "post",
+    "_updatedAt": "2025-05-15T04:03:58Z",
+    "author": {
+      "_ref": "e26ea9b6-2e45-4303-88c6-7c8e00021bad",
+      "_type": "reference"
+    },
+    "body": [
+      {
+        "_key": "004d553d8fd0",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "a28907dd94fb",
+            "_type": "span",
+            "marks": [],
+            "text": "The Quintessential Street Food"
+          }
+        ],
+        "markDefs": [],
+        "style": "h3"
+      },
+      {
+        "_key": "c50819ea6b59",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "af87b6a61a35",
+            "_type": "span",
+            "marks": [],
+            "text": "When you think of New York City, a few iconic images might come to mind: the Statue of Liberty, Times Square, and, of course, the classic New York hot dog. This humble street food has become a symbol of the city itself, representing the fast-paced, no-nonsense attitude of New Yorkers."
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      },
+      {
+        "_key": "bf28ba8aeebe",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "f0394e3c251e",
+            "_type": "span",
+            "marks": [],
+            "text": "A Brief History"
+          }
+        ],
+        "markDefs": [],
+        "style": "h3"
+      },
+      {
+        "_key": "5d980addd75a",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "1d52f8fdd599",
+            "_type": "span",
+            "marks": [],
+            "text": "The New York hot dog traces its roots back to the late 1800s when German immigrants brought their sausages to America. The term 'hot dog' is believed to have been coined at a baseball game at the Polo Grounds in New York City, where vendors sold 'dachshund sausages' in rolls."
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      },
+      {
+        "_key": "b47bb873409a",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "ed0032979834",
+            "_type": "span",
+            "marks": [],
+            "text": "Where to Find the Best Hot Dogs"
+          }
+        ],
+        "markDefs": [],
+        "style": "h3"
+      },
+      {
+        "_key": "63c5cbdebeca",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "d25e168daa20",
+            "_type": "span",
+            "marks": [],
+            "text": "While you can find hot dogs on nearly every street corner in NYC, some stands and shops have earned legendary status. Nathan's Famous in Coney Island is perhaps the most renowned, having served hot dogs since 1916. Gray's Papaya and Papaya King are also famous for their delicious dogs and tropical drinks."
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      },
+      {
+        "_key": "f7266a16e304",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "9ae7a3c76194",
+            "_type": "span",
+            "marks": [],
+            "text": "What Makes a New York Hot Dog Unique?"
+          }
+        ],
+        "markDefs": [],
+        "style": "h3"
+      },
+      {
+        "_key": "4cce932b7db4",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "9f8cd697e814",
+            "_type": "span",
+            "marks": [],
+            "text": "A true New York hot dog is typically made with an all-beef frankfurter, served on a soft bun, and topped with mustard, sauerkraut, and onions. The simplicity of the ingredients allows the quality of the sausage to shine through, making it a favorite among locals and tourists alike."
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      },
+      {
+        "_key": "da9a887c26dc",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "61c0dc1f3887",
+            "_type": "span",
+            "marks": [],
+            "text": "Conclusion"
+          }
+        ],
+        "markDefs": [],
+        "style": "h3"
+      },
+      {
+        "_key": "bbc7e025161a",
+        "_type": "block",
+        "children": [
+          {
+            "_key": "a8f543f12a09",
+            "_type": "span",
+            "marks": [],
+            "text": "Whether you're a first-time visitor or a lifelong resident, enjoying a hot dog from a street vendor is a quintessential New York experience. It's a taste of the city's history and culture wrapped up in a bun."
+          }
+        ],
+        "markDefs": [],
+        "style": "normal"
+      }
+    ],
+    "language": "en",
+    "mainImage": {
+      "_type": "image",
+      "asset": {
+        "_ref": "image-bb57c681abb0837b44054ea8bac9fc82065519a2-3648x4560-jpg",
+        "_type": "reference"
+      }
+    },
+    "publishedAt": "2023-10-05T12:00:00.000Z",
+    "slug": {
+      "_type": "slug",
+      "current": "exploring-the-iconic-new-york-hot-dog"
+    },
+    "title": "Exploring the Iconic New York Hot Dog"
+  }
+}

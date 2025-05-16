@@ -1,13 +1,14 @@
 import type {SanityClient, SanityDocument} from 'sanity'
 import {supportedLanguages} from '../sanity.config'
-import {token} from '../env'
-
+import {token, projectId, dataset} from '../env'
+import {createClient} from '@sanity/client'
 type TranslationResult = {
   success: boolean
   language: {id: string; title: string}
   error?: unknown
   skipped?: boolean
 }
+export const client = createClient({projectId, dataset, apiVersion: 'vX', useCdn: false, token})
 
 const createMetadataDocument = async (
   client: SanityClient,
@@ -78,14 +79,13 @@ const hasTranslation = (metadata: any, languageId: string): boolean => {
 
 const translateToLanguage = async (
   document: SanityDocument,
-  translateClient: SanityClient,
   fromLanguage: {id: string; title: string},
   language: {id: string; title: string},
   metadata: any,
 ): Promise<TranslationResult> => {
   console.log('Translating to', language)
   try {
-    const newDoc = await translateClient.agent.action.translate({
+    const newDoc = await client.agent.action.translate({
       schemaId: '_.schemas.default',
       documentId: document._id as string,
       fromLanguage,
@@ -111,11 +111,11 @@ const translateToLanguage = async (
 
     // If we have metadata, patch it. If not, create a new one
     if (metadata?._id) {
-      await patchMetadataTranslations(translateClient, metadata._id, newRef)
+      await patchMetadataTranslations(client, metadata._id, newRef)
     } else {
       // Create new metadata document with original document and translation
       console.log('Creating new metadata document with original document and translation')
-      await createMetadataDocument(translateClient, document._id as string, newRef, fromLanguage.id)
+      await createMetadataDocument(client, document._id as string, newRef, fromLanguage.id)
     }
 
     console.log('Translated to', language, newDoc)
@@ -126,8 +126,7 @@ const translateToLanguage = async (
   }
 }
 
-export const translate = async (document: SanityDocument, client: SanityClient) => {
-  const translateClient = client.withConfig({token, apiVersion: 'vX'})
+export const translate = async (document: SanityDocument) => {
   const fromLanguage = supportedLanguages.find((language) => language.id === document.language)
 
   if (!fromLanguage) {
@@ -153,13 +152,7 @@ export const translate = async (document: SanityDocument, client: SanityClient) 
       continue
     }
 
-    const result = await translateToLanguage(
-      document,
-      translateClient,
-      fromLanguage,
-      language,
-      metadata,
-    )
+    const result = await translateToLanguage(document, fromLanguage, language, metadata)
 
     // If translation was successful, fetch the updated metadata document
     if (result.success) {
