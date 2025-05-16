@@ -40,7 +40,7 @@ class Semaphore {
 }
 
 // Create a semaphore with desired concurrency limit
-const translationSemaphore = new Semaphore(6) // Adjust this number based on your API limits
+const translationSemaphore = new Semaphore(5) // Adjust this number based on your API limits
 
 const createMetadataDocument = async (
   client: SanityClient,
@@ -67,11 +67,10 @@ const createMetadataDocument = async (
             _type: 'reference',
           },
         },
-        newRef,
       ],
     }
     const result = await client.create(metadataDoc)
-    console.log('Successfully created metadata document with original document and translation')
+    console.log('Successfully created metadata document with original document')
     return result
   } catch (error) {
     console.error('Error creating metadata document:', error)
@@ -141,14 +140,8 @@ const translateToLanguage = async (
       },
     }
 
-    // If we have metadata, patch it. If not, create a new one
-    if (metadata?._id) {
-      await patchMetadataTranslations(client, metadata._id, newRef)
-    } else {
-      // Create new metadata document with original document and translation
-      console.log('Creating new metadata document with original document and translation')
-      await createMetadataDocument(client, document._id as string, newRef, fromLanguage.id)
-    }
+    // Always patch the metadata document - it should exist at this point
+    await patchMetadataTranslations(client, metadata._id, newRef)
 
     console.log('Translated to', language, newDoc)
     return {success: true, language}
