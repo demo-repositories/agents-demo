@@ -1,5 +1,5 @@
 import type {SanityClient, SanityDocument} from 'sanity'
-import {supportedLanguages} from '../i18n'
+import {supportedLanguages} from '../sanity.config'
 import {token, projectId, dataset} from '../env'
 import {createClient} from '@sanity/client'
 
